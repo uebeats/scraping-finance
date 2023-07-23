@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Yahoo Finance Scraping</title>
+  <!-- favicon -->
+  <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
+  <!-- Font Inter -->
+  <link rel="preconnect" href="https://fonts.bunny.net">
+  <link href="https://fonts.bunny.net/css?family=inter:300,400,700,800|inter-tight:400,500,600,700,800"
+    rel="stylesheet" />
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css"
+    integrity="sha512-nMNlpuaDPrqlEls3IX/Q56H36qvBASwb3ipuo3MxeWbsQB1881ox0cRv7UPTgBlriqoynt35KjEwgGUeUXIPnw=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-5-theme/1.3.0/select2-bootstrap-5-theme.css"
+    integrity="sha512-8y/BzCVdFU/3nfweHjuwIXYh1B4ujUaPDadFLtQN42KHxWUhfca04K3VA3XwoAS6Qx/RXZRaetxnf9OOphrdxg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Inter', sans-serif;
+    }
+
+    p {
+      text-align: justify;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .logo {
+      max-width: 150px;
+      display: block;
+      margin: auto;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="py-5">
+    <div class="container">
+
+      <div class="row justify-content-center mb-4">
+        <div class="col-md-5">
+          <a href="/">
+            <img src="img/logo-yahoo.png" alt="Logo" class="img-fluid logo">
+            <p class="text-center">webscraping</p>
+          </a>
+        </div>
+      </div>
+
+      <div class="row justify-content-center mb-4">
+        <div class="col-md-5">
+          <p>
+            Aplicación web para scraping de datos de Yahoo Finance.
+            Obtienes los datos de una acción o criptomoneda y puedes copiar al portapapeles.
+
+          </p>
+          <p class="fw-bold text-center">Filtro: Últimos 5 años/Precio Historico/Mensual</span>
+          </p>
+          <div class="card">
+            <div class="card-body">
+              <h6 class="fw-bold">Seleccione el quote deseado:</h6>
+              <form>
+                <div class="row">
+                  <div class="col-md-6">
+                    <select id="quoteSelect" name="quote" class="form-select">
+                      <option value="HRI">HRI</option>
+                      <option value="GOOGL">GOOGL</option>
+                      <option value="AAPL">AAPL</option>
+                      <option value="MSFT">MSFT</option>
+                      <option value="AMZN">AMZN</option>
+                      <option value="FB">FB</option>
+                      <option value="TSLA">TSLA</option>
+                      <option value="NVDA">NVDA</option>
+                      <option value="PYPL">PYPL</option>
+                      <option value="ADBE">ADBE</option>
+                      <option value="NFLX">NFLX</option>
+                      <option value="INTC">INTC</option>
+                      <option value="CMCSA">CMCSA</option>
+                      <option value="PEP">PEP</option>
+                      <option value="CSCO">CSCO</option>
+                      <option value="AVGO">AVGO</option>
+                      <option value="BTC-USD">BTC-USD</option>
+                      <!-- Otras opciones de quote aquí -->
+                    </select>
+
+                  </div>
+                  <div class="col-md-6">
+                    <button type="button" id="getQuoteButton" class="btn btn-success w-100">
+                      <i class="fa-solid fa-spider fa-shake"></i>
+                      Obtener datos
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row justify-content-center">
+        <div class="col-md-5">
+          <div class="card">
+            <div class="card-body">
+              <div class="row justify-content-center align-items-center">
+                <div class="col-md-6 text-start">
+                  <h6 class="fw-bold">Resultado del Scraping:</h6>
+                </div>
+                <div class="col-md-6 text-end">
+                  <button type="button" id="copyButton" class="btn btn-primary w-100">
+                    <i class="fa-regular fa-copy"></i>
+                    Copiar al portapapeles
+                  </button>
+                </div>
+              </div>
+              <!-- Agrega un elemento para mostrar el loader -->
+              <div id="loader" style="display: none;" class="mt-4">
+                <div class="alert alert-success" role="alert">
+                  Buceando en Yahoo Finance... <i class="fa-solid fa-spinner fa-spin-pulse"></i>
+                </div>
+              </div>
+              <ul id="quoteDataList" class="list-unstyled"></ul>
+              <!-- <textarea name="quoteDataList" id="quoteDataList" cols="30" rows="10" class="form-control mb-3"></textarea> -->
+              <!-- Agrega un botón para copiar al portapapeles -->
+              <!-- <button type="button" id="copyButton" class="btn btn-success">Copiar al portapapeles</button> -->
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="mt-2 text-center">
+        <small>Developed by <a href="https://jesuscaballero.cl" target="_blank" class="fw-bold">@uebeats</a></small>
+      </p>
+    </div>
+  </main>
+  <!-- Incluye la librería de Bootstrap 5 -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
+    crossorigin="anonymous"></script>
+  <!-- Incluye la librería de Font Awesome 6 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"
+    integrity="sha512-fD9DI5bZwQxOi7MhYWnnNPlvXdp/2Pj3XSTRrFs5FQa4mizyGLnJcN6tuvUS6LbmgN1ut+XGSABKvjN0H6Aoow=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <!-- Incluye la librería clipboard.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js"></script>
+  <!-- Incluye la librería select2 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"
+    integrity="sha512-3gJwYpMe3QewGELv8k/BX9vcqhryRdzRMxVfq6ngyWXwo03GFEzjsUm8Q7RZcHPHksttq7/GFoxjCVUjkjvPdw=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"
+    integrity="sha512-2ImtlRlf2VVmiGZsjm9bEyhjGW4dU7B6TNwh/hx/iSByxNENtj3WVE6o/9Lj4TJeVXPi4bnOIMXFIJJAeufa0A=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script>
+    $('select').select2({
+      theme: 'bootstrap-5'
+    });
+    document.getElementById('getQuoteButton').addEventListener('click', async () => {
+      const selectedQuote = document.getElementById('quoteSelect').value;
+      // Mostrar el loader mientras se hace la solicitud
+      const loader = document.getElementById('loader');
+      loader.style.display = 'block';
+      try {
+        const response = await fetch(`/scrape/${selectedQuote}`);
+        const quoteData = await response.json();
+        const quoteDataList = document.getElementById('quoteDataList');
+        quoteDataList.innerHTML = '';
+        quoteData.forEach(quote => {
+          // para mostrar la data en una lista
+          const li = document.createElement('li');
+          li.textContent = quote;
+          quoteDataList.appendChild(li);
+          // quoteDataList.value = quoteDataList.value + quote + '\n';
+        });
+      } catch (error) {
+        console.error('Error al obtener los datos del quote:', error);
+      } finally {
+        // Ocultar el loader cuando se recibe la respuesta o hay un error
+        loader.style.display = 'none';
+      }
+    });
+
+    document.getElementById('copyButton').addEventListener('click', () => {
+      // Copiar los datos al portapapeles
+      const quoteDataList = document.getElementById('quoteDataList');
+      const listItems = quoteDataList.getElementsByTagName('li');
+      let textToCopy = '';
+      for (let i = 0; i < listItems.length; i++) {
+        textToCopy += listItems[i].textContent + '\n';
+      }
+      copyToClipboard(textToCopy);
+      alert('Datos copiados al portapapeles. Ahora puedes pegarlos en la hoja de cálculo.');
+    });
+
+    // Función para copiar el texto al portapapeles
+    function copyToClipboard(text) {
+      const textarea = document.createElement('textarea');
+      textarea.style.position = 'fixed';
+      textarea.style.top = 0;
+      textarea.style.left = 0;
+      textarea.style.width = '2em';
+      textarea.style.height = '2em';
+      textarea.style.padding = 0;
+      textarea.style.border = 'none';
+      textarea.style.outline = 'none';
+      textarea.style.boxShadow = 'none';
+      textarea.style.background = 'transparent';
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+    }
+  </script>
+</body>
+
+</html>
