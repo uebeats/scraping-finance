@@ -2,6 +2,8 @@ const express = require('express');
 const puppeteer = require('puppeteer');
 const ejs = require('ejs');
 const path = require('path');
+const moment = require('moment');
+const { log } = require('console');
 
 const app = express();
 const port = 3000;
@@ -19,20 +21,33 @@ app.get('/', (req, res) => {
 });
 
 // Ruta para realizar el web scraping del quote seleccionado
-app.get('/scrape/:quote', async (req, res) => {
-  const quote = req.params.quote;
-  const quoteData = await scrapeYahooFinance(quote);
+app.get('/scrape/', async (req, res) => {
+  // const quote = req.params.quote;
+  const quote = req.query.quote;
+  const interval = req.query.interval;
+  const period1 = req.query.period1;
+  const period2 = req.query.period2;
+
+  function obtenerMarcaTiempoUnix(fecha) {
+    const fechaMoment = moment(fecha, 'YYYY-MM-DD').unix();
+    // const fechaConvertida = moment(fechaMoment, 'MMM DD, YYYY').unix();
+    return fechaMoment;
+  }
+
+  const quoteData = await scrapeYahooFinance(quote, interval, obtenerMarcaTiempoUnix(period1), obtenerMarcaTiempoUnix(period2));
+  // console.log(period1, period2, interval)
   res.json(quoteData); // Devuelve los datos como JSON
 });
 
-async function scrapeYahooFinance(quote) {
+async function scrapeYahooFinance(quote, interval, period1, period2) {
+
   const browser = await puppeteer.launch({
     headless: "new"
   });
   const page = await browser.newPage();
 
   // URL de la página que quieres hacer web scraping
-  const url = `https://finance.yahoo.com/quote/${quote}/history?period1=1531526400&period2=1689292800&interval=1mo&filter=history&frequency=1mo&includeAdjustedClose=true`;
+  const url = `https://finance.yahoo.com/quote/${quote}/history?period1=${period1}&period2=${period2}&interval=${interval}&filter=history&frequency=${interval}&includeAdjustedClose=true`;
 
   await page.goto(url);
 
@@ -63,6 +78,8 @@ async function scrapeYahooFinance(quote) {
 
   // Filtrar los elementos nulos y devolver los datos extraídos
   return data.filter(item => item !== null);
+  // console.log(data);
+  // console.log(url);
 }
 
 app.listen(port, () => {
